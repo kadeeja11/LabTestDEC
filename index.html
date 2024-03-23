@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meal Tracker Web Application</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f7f7f7;
+        }
+        h1 {
+            text-align: center;
+            margin-top: 20px;
+            color: #333;
+        }
+        button {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #mealPlanResults {
+            margin: 20px auto;
+            max-width: 600px;
+            padding: 10px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        #mealPlanResults div {
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+        }
+        h3 {
+            color: #333;
+            margin-bottom: 5px;
+        }
+        p {
+            margin: 5px 0;
+            color: #666;
+        }
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+<h1>Meal Tracker Web Application</h1>
+<button onclick="generateMealPlan()">Generate Meal Plan</button>
+<button onclick="getRandomRecipes()">Get Random Recipes</button>
+<button onclick="getRecipeInfo()">Get Recipe Information</button>
+<button onclick="getRecipeById()">Get Recipe by ID</button>
+<div id="mealPlanResults"></div>
+
+<script>
+    async function generateMealPlan() {
+        try {
+            const diet = 'vegetarian'; // Example diet, you can modify as needed
+            const targetCalories = 2000; // Example target calories, you can modify as needed
+
+            const response = await fetch('http://localhost:3000/mealplan/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ diet, targetCalories })
+            });
+
+            const mealPlan = await response.json();
+            displayMealPlan(mealPlan);
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    async function getRandomRecipes() {
+    try {
+        const response = await fetch('http://localhost:3000/recipes/random');
+        const responseData = await response.text(); // Log the response as text
+        console.log(responseData); // Log the response data to check if it's JSON or HTML
+        const recipes = JSON.parse(responseData); // Attempt to parse as JSON
+        console.log(recipes); // Log the parsed JSON data
+        displayRecipes(recipes.recipes);
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+async function getRecipeInfo() {
+    try {
+        const recipeId = 12345; // Replace 12345 with the actual recipe ID
+        const response = await fetch('http://localhost:3000/recipe/info', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ recipeId })
+        });
+        const responseData = await response.text(); // Log the response as text
+        console.log(responseData); // Log the response data to check if it's JSON or HTML
+        const recipeInfo = JSON.parse(responseData); // Attempt to parse as JSON
+        console.log(recipeInfo); // Log the parsed JSON data
+        displayRecipeInfo(recipeInfo);
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+
+async function getRecipeById() {
+    try {
+        const recipeId = 12345; // Replace 12345 with the actual recipe ID
+        const response = await fetch(`http://localhost:3000/recipe/${recipeId}`);
+        const recipe = await response.json();
+        displayRecipeById(recipe);
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+function displayRecipeInfo(recipeInfo) {
+    const mealPlanResultsDiv = document.getElementById('mealPlanResults');
+
+    // Clear previous results
+    mealPlanResultsDiv.innerHTML = '';
+
+    // Display recipe information
+    const recipeDiv = document.createElement('div');
+    recipeDiv.innerHTML = `
+        <h3>${recipeInfo.title}</h3>
+        <p>Category: ${recipeInfo.category}</p>
+        <p>Calories: ${recipeInfo.calories}</p>
+        <p>Link: <a href="${recipeInfo.sourceUrl}" target="_blank">${recipeInfo.sourceUrl}</a></p>
+    `;
+    mealPlanResultsDiv.appendChild(recipeDiv);
+}
+
+function displayRecipeById(recipe) {
+    const mealPlanResultsDiv = document.getElementById('mealPlanResults');
+
+    // Clear previous results
+    mealPlanResultsDiv.innerHTML = '';
+
+    // Display recipe
+    const recipeDiv = document.createElement('div');
+    recipeDiv.innerHTML = `
+        <h3>${recipe.title}</h3>
+        <p>Category: ${recipe.category}</p>
+        <p>Calories: ${recipe.calories}</p>
+        <p>Link: <a href="${recipe.sourceUrl}" target="_blank">${recipe.sourceUrl}</a></p>
+    `;
+    mealPlanResultsDiv.appendChild(recipeDiv);
+}
+
+
+    function displayMealPlan(mealPlan) {
+        const mealPlanResultsDiv = document.getElementById('mealPlanResults');
+
+        // Clear previous results
+        mealPlanResultsDiv.innerHTML = '';
+
+        // Display meal plan results
+        mealPlan.meals.forEach(meal => {
+            const mealDiv = document.createElement('div');
+            mealDiv.innerHTML = `
+                <h3>${meal.title}</h3>
+                <p>Category: ${meal.category}</p>
+                <p>Calories: ${meal.calories}</p>
+                <p>Link: <a href="${meal.sourceUrl}" target="_blank">${meal.sourceUrl}</a></p>
+            `;
+            mealPlanResultsDiv.appendChild(mealDiv);
+        });
+    }
+
+    function displayRecipes(recipes) {
+        const mealPlanResultsDiv = document.getElementById('mealPlanResults');
+
+        // Clear previous results
+        mealPlanResultsDiv.innerHTML = '';
+
+        // Display recipes
+        recipes.forEach(recipe => {
+            const recipeDiv = document.createElement('div');
+            recipeDiv.innerHTML = `
+                <h3>${recipe.title}</h3>
+                <p>Category: ${recipe.category}</p>
+                <p>Calories: ${recipe.calories}</p>
+                <p>Link: <a href="${recipe.sourceUrl}" target="_blank">${recipe.sourceUrl}</a></p>
+            `;
+            mealPlanResultsDiv.appendChild(recipeDiv);
+        });
+    }
+</script>
+</body>
+</html>
